@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>添加英雄</title>
+
+    <!-- 导入jquery -->
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <!-- 导入bootstrap -->
+    <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.css">
+    <script src="/node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <!-- 导入art-template -->
+    <script src="/node_modules/art-template/lib/template-web.js"></script>
+</head>
+
+<body>
+<!-- bootstrap的容器  带版心的-->
+<div class="container">
+    <!-- 导航 -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1"
+                        aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span> <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">欢迎进入CQ后台管理</a>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+    <!-- 底部的内容 -->
+    <div class="row">
+        <div class="col-xs-9">
+            <div class="panel panel-default">
+                <!-- 标题 -->
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <!-- 面包屑导航 -->
+                        <ol class="breadcrumb">
+                            <li><a href="#">首页</a></li>
+                            <li><a href="#">英雄管理</a></li>
+                        </ol>
+                    </h3>
+                </div>
+
+                <!-- 内容 -->
+                <div class="panel-body">
+                    <form class="form-horizontal" id="form">
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">姓名</label>
+                            <div class="col-sm-10">
+                                <input type="text" name="name" class="form-control" id="heroName" placeholder="姓名">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="skill" class="col-sm-2 control-label">技能</label>
+                            <div class="col-sm-10">
+                                <input type="text" name="skill" class="form-control" id="skill" placeholder="技能">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="icon" class="col-sm-2 control-label">头像</label>
+                            <div class="col-sm-10">
+                                <input type="file" name="icon" class="form-control" id="icon">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <img src="" alt="" id="img">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-default btn-insert">新增</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    $(function () {
+        $('#form').on('submit', function (e) {
+            //阻止默认跳转
+            e.preventDefault();
+            //创建FormData对象 ---接收dom对象,所以要在$('#form')后加[0]
+            var formData = new FormData($('#form')[0]);
+            //提交
+            $.ajax({
+                url: '/heroAdd',
+                type: 'post',
+                dataType: 'json',//返回json
+                data: formData,
+                //禁止jQuery默认表单序列号
+                processData: false,
+                //禁用请求头
+                contentType: false,
+
+                success: function (data) {
+                    if (data.err_code == 0) {
+                        //跳转到首页
+                        location.href = '/';
+                    } else {
+                        alert(data.err_msg)
+                    }
+                }
+            })
+        });
+
+        //图片预览--->
+        //给input元素注册change事件.
+        $('#icon').on('change', function () {
+            //创建FileReader对象
+            var fileReader = new FileReader();
+            //读取文件
+            fileReader.readAsDataURL(this.files[0]);
+            //读取完成触发onload事件
+            fileReader.onload = function () {
+                //fileReader.result 是文件的base64编码
+                $('#img').attr('src', fileReader.result);
+
+                //获取img的宽高
+                console.log($('#img').width(), $('#img').width());
+
+                //获取文件大小
+                /*
+                  英文占一个字节(byte),1kb = 1024byte
+                  图片是base64编码,尺寸会变大
+                      真实大小 = (base64-base64/8*2) = base64*0.75
+
+                  kb = (base64 * 0.75)/1024
+                 */
+                console.log((fileReader.result.length * 0.75) / 1024 + 'kb');
+
+                //将其预览设置为固定尺寸
+                $('#img').width('100px');
+                $('#img').height('100px');
+            }
+        })
+    })
+</script>
+</html>
